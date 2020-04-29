@@ -151,8 +151,8 @@ class ChemModel:
             final_sfh, final_inflows = extra_sfh_and_inflows(sfh, self.gamma, self.tstart)
             self.sfh = np.array(final_sfh)
             self.inflowvals= np.array(final_inflows)
-            dts=[self.sfh[i+1,0]-self.sfh[i,0] for i in range(len(self.sfh[:,0])-1)]
-            dts=np.append(dts,dts[-1])
+            dts=np.diff(self.sfh[:,0]) 
+            dts=np.append(dts[0],dts)
             if self.inflows['mass']>0:
                 self.inflowvals[:,1] = self.inflowvals[:,1]/np.sum((self.inflowvals[:,1]*dts)[np.where(self.inflowvals[:,0]<self.tend)])*self.inflows['mass'] # if available, rescale inflow mass to provided value
             else:    

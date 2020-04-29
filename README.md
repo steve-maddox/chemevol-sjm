@@ -13,39 +13,47 @@ and described in detail in Rowlands et al 2014 (MNRAS, 441, 1040), and De Vis et
 
 The version of this code used for De Vis et al 2017b is in release [v_de_vis2017](https://github.com/zemogle/chemevol/releases/tag/v_de_vis2017).
 The master version contains the version described in De Vis et al 2020.
-#
-This is a version modified by Maddox. The changes include: 
 
-in evolve.py:
+## SJM version
 
-    removing several in-line loops and using array assignments instead. This required a coupld of changes to variables to make sure they were numpy arrays instead of lists.
+The version modified by Maddox has many changes including some bug fixes and some simplifications of the code. 
 
-    using a lookup table to get redshift as a function of t, to speed up compared to multiple cals to z_at_value() 
 
-    using dt instead of 0.03 
+* in evolve.py:
 
-    passing the dts array as an argument to recycle as well as the current dt
-
-in functions.py:
-    limit time range to age of the universe in extra_sfh_and_inflows() 
-
-    removing several in-line loops and using array assignments instead
-
-    in outflows_nelso(), change from integral to differential mass-loading factors
-
-    in outflows_feldman(), change to return 3 vel components [0.7,0.2,0.1]
-
-    added outflows() to easily flip between nelson and feldman options
+   * in ChemModel changed the load_sfh_and_inflow to normalize the SFH using proper dt steps, and made defn of dt consistent throughout.
     
-    in mass_integral took 10**m outside loop
+    * removing several in-line loops and using array assignments instead. This required a couple of changes to variables to make sure they were numpy arrays instead of lists.
 
-    in recycle - changed the way it does the summation over spread in infall times so it does not have material inflaling before it is expelled.
+    * using a lookup table to get redshift as a function of t, to speed up compared to multiple calls to z_at_value() which does lengthy numerical integrals for each call.  
 
-in lookups.py:
+    * starting at a sensible t, instead of 0.03 Gyr, which corresponds to z = 67...
+    
+    * using dt instead of a fixed 0.03Gyr 
 
-   changed the table of infall times - used a better wat to do the calculation
-   changed the interpolation method for find_mass_loading and find_reaccretion_time
-   changed the table of reaccretion times. 
+    * passing the dts array as an argument to recycle as well as the current dt
+
+* in functions.py:
+
+    * limit time range to start at t_start and end at the age of the universe in extra_sfh_and_inflows() 
+
+    * removing several in-line loops and using array assignments instead
+
+    * in outflows_nelso(), change from integral to differential mass-loading factors
+
+    * in outflows_feldman(), change to return 3 vel components [0.7,0.2,0.1]
+
+    * added outflows() to easily flip between nelson and feldman options
+    
+    * in mass_integral took 10**m outside loop
+
+    * in recycle - changed the way it does the summation over spread in infall times so it does not have material inflaling before it is expelled.
+
+* in lookups.py:
+
+   * changed the table of infall times - used a better wat to do the calculation
+   * changed the interpolation method for find_mass_loading and find_reaccretion_time
+   * changed the table of reaccretion times. 
    
 
 #
