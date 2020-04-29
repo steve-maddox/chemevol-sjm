@@ -31,8 +31,12 @@ in functions.py:
 
     removing several in-line loops and using array assignments instead
 
-    in outflows(), change from integratal to differential mass-loading factors
+    in outflows_nelso(), change from integral to differential mass-loading factors
 
+    in outflows_feldman(), change to return 3 vel components [0.7,0.2,0.1]
+
+    added outflows() to easily flip between nelson and feldman options
+    
     in mass_integral took 10**m outside loop
 
     in recycle - changed the way it does the summation over spread in infall times so it does not have material inflaling before it is expelled.

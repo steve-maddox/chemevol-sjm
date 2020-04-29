@@ -558,8 +558,8 @@ def dust_inandout(in_md,out_md,D,gas_in,gas_out):
         dust_out = D*gas_out
 
     return dust_inf,dust_out
-
-def outflows(redshift,sfr,m):
+    
+def outflows_nelson(redshift,sfr,m):
     '''
     Define outflow rate, parameterised by the mass loading factors epsilon_out, outflows = epsilon_out x SFR.
     The mass loading factors are taken from Nelson et al 2019 (https://arxiv.org/pdf/1902.05554) for 5 different redshift.
@@ -580,9 +580,9 @@ def outflows(redshift,sfr,m):
 
     return np.append(outflows_tot,outflows)
 
-def outflows_feldmann(sfr,m):
+def outflows_feldmann(redshift,sfr,m):
     '''
-    Outdated function that is not used in current model but could be of use to others wanting to experiment other outflow prescriptions
+    Updated to have 3 velocity components shared in prop to [0.7,0.2,0.1] 
     Define outflow rate, parameterised by epsilon_out = 2*f_comb, outflows = epsilon_out x SFR.
     See Feldmann et al 2015 MNRAS 449 327 Eq 27 derived from Hopkins et al 2012 MNRAS 421 3522 (Fig 7).
     Here we use same terminology as their paper.
@@ -592,12 +592,12 @@ def outflows_feldmann(sfr,m):
     -- m: stellar mass at time t
     '''
     x = 1
-    # the function is based on simulations in Hopkins et al 2012 and only go to logM* = 8.1 so we truncate mstar here
-    m_low = 1e8
-    if (m < m_low):
-        outflow_feld = 0.
+    # the function is based on simulations in Hopkins et al 2012 and only go to logM* = 8.1 
+    # so apply a max epsilon of 30, which correspnds to epsilon(1e8) 
+    # equation from Feldmann et al 2015 based on Hopkins et al 2012 simulations
+    if(m<1e8): 
+        epsilon_out = 30
     else:
-        # equation from Feldmann et al 2015 based on Hopkins et al 2012 simulations
         y = (m/1e10)**-0.59
         f_comb = (x+y) - (x**-1+y**-1)**-1
         epsilon_out = 2 * f_comb
@@ -610,11 +610,17 @@ def outflows_feldmann(sfr,m):
         # Feldmann sets outflows to never be less than 2 x SFR, but Hopkins paper has floor at ~1
         elif (epsilon_out < 1):
             epsilon_out = 1
-        outflow_feld = sfr * epsilon_out
- 
-    return outflow_feld
+    
+    outflow_feld_tot = sfr * epsilon_out
+        
+    outflows_feld = np.array([0.7, 0.2, 0.1])*outflow_feld_tot
+    return np.append(outflow_feld_tot, outflows_feld)
 
 
+def outflows(redshift,sfr,m):
+    flow = outflows_nelson(redshift,sfr,m)
+#    flow = outflows_feldmann(redshift,sfr,m)
+    return flow
 
 def mass_integral(choice, delta_lims, reduce_sn, t, metallicity, sfr_lookup, z_lookup, imf, SNyield, AGByield, totyields, nisotopes, isotopes):
      '''
