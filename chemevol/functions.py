@@ -574,8 +574,8 @@ def outflows(redshift,sfr,m):
     etas = find_mass_loading(m,redshift)
     outflows = sfr*10**etas
     # make them differential 
-#    outflows[0] = outflows[0]-outflows[1] 
-#    outflows[1] = outflows[1]-outflows[2]
+    outflows[0] = outflows[0]-outflows[1] 
+    outflows[1] = outflows[1]-outflows[2]
     outflows_tot = np.sum(outflows) 
 
     return np.append(outflows_tot,outflows)

@@ -10,9 +10,41 @@ Running the script following the instructions below will produce:
 
 The code is based on Morgan & Edmunds 2003 (MNRAS, 343, 427)
 and described in detail in Rowlands et al 2014 (MNRAS, 441, 1040), and De Vis et al 2017b (MNRAS, 471, 1743), with the latest developments described in De Vis et al 2020.
+
 The version of this code used for De Vis et al 2017b is in release [v_de_vis2017](https://github.com/zemogle/chemevol/releases/tag/v_de_vis2017).
 The master version contains the version described in De Vis et al 2020.
+#
+This is a version modified by Maddox. The changes include: 
 
+in evolve.py:
+
+    removing several in-line loops and using array assignments instead. This required a coupld of changes to variables to make sure they were numpy arrays instead of lists.
+
+    using a lookup table to get redshift as a function of t, to speed up compared to multiple cals to z_at_value() 
+
+    using dt instead of 0.03 
+
+    passing the dts array as an argument to recycle as well as the current dt
+
+in functions.py:
+    limit time range to age of the universe in extra_sfh_and_inflows() 
+
+    removing several in-line loops and using array assignments instead
+
+    in outflows(), change from integratal to differential mass-loading factors
+
+    in mass_integral took 10**m outside loop
+
+    in recycle - changed the way it does the summation over spread in infall times so it does not have material inflaling before it is expelled.
+
+in lookups.py:
+
+   changed the table of infall times - used a better wat to do the calculation
+   changed the interpolation method for find_mass_loading and find_reaccretion_time
+   changed the table of reaccretion times. 
+   
+
+#
 If you use this code, please do cite the above papers.  The license is provided with this package.
 
 ## Installation
