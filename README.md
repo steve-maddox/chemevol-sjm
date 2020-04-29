@@ -21,8 +21,10 @@ The version modified by Maddox has many changes including some bug fixes and som
 
 * in evolve.py:
 
-   * in ChemModel changed the load_sfh_and_inflow to normalize the SFH using proper dt steps, and made defn of dt consistent throughout.
-    
+    * in ChemModel changed the load_sfh_and_inflow to normalize the SFH using proper dt steps, and made defn of dt consistent throughout.
+
+    * in ChemModel added extra parameter 'out_model' in the outflows entry to choose the model used to define the outflow. Needs to be 'nelson' or 'feldmann'
+
     * removing several in-line loops and using array assignments instead. This required a couple of changes to variables to make sure they were numpy arrays instead of lists.
 
     * using a lookup table to get redshift as a function of t, to speed up compared to multiple calls to z_at_value() which does lengthy numerical integrals for each call.  
@@ -39,11 +41,11 @@ The version modified by Maddox has many changes including some bug fixes and som
 
     * removing several in-line loops and using array assignments instead
 
-    * in outflows_nelso(), change from integral to differential mass-loading factors
+    * in outflows_nelson(), change from integral to differential mass-loading factors
 
     * in outflows_feldman(), change to return 3 vel components [0.7,0.2,0.1]
 
-    * added outflows() to easily flip between nelson and feldman options
+    * added outflows() to easily flip between nelson and feldman options. Need to pass model choice in the call to 
     
     * in mass_integral took 10**m outside loop
 

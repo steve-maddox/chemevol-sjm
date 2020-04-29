@@ -282,12 +282,12 @@ class ChemModel:
                 
 
                 # SET UP INFLOWS AND OUTFLOWS
-
                 # How much gas is lost or gained dure to outflows/inflows
                 gas_inf,gas_out,outflows = gas_inandout(\
                     redshift,\
                     self.inflows['on'],\
                     self.outflows['on'],\
+                    self.outflows['model'],\
                     self.inflow(t),\
                     SFR,\
                     mstars,\
@@ -302,6 +302,7 @@ class ChemModel:
                         redshift,\
                         self.inflows['on'],\
                         self.outflows['on'],\
+                        self.outflows['model'],\
                         self.inflow(t),\
                         SFR,\
                         mstars,\

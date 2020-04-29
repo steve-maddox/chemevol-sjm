@@ -491,13 +491,14 @@ def inflows_SFR(sfr,parameter):
     inflow_rate = sfr*parameter
     return inflow_rate
 
-def gas_inandout(redshift,in_on,out_on,in_sfr,sfr,m,reduceout):
+def gas_inandout(redshift,in_on,out_on,out_model,in_sfr,sfr,m,reduceout):
     '''
     Derive the gas lost and gained from inflows and outflows
 
     In:
     -- in_on: are inflows turned on? (True/False)
     -- out_on: are outflows turned on? (True/False)
+    -- out_model: outflow model nelson or feldmann 
     -- in_sfr: inflow rate at time t
     -- sfr: SFR at time t
     -- m: stellar mass at time t
@@ -512,7 +513,7 @@ def gas_inandout(redshift,in_on,out_on,in_sfr,sfr,m,reduceout):
         gas_outflows=0,0,0
         gas_out = 0.
     else:
-        gas_outflows= np.array(outflows(redshift,sfr, m))/reduceout
+        gas_outflows= np.array(outflows(redshift,sfr, m,out_model))/reduceout
         gas_out = gas_outflows[0]
  
     return gas_inf,gas_out,gas_outflows[1:4]
@@ -617,9 +618,14 @@ def outflows_feldmann(redshift,sfr,m):
     return np.append(outflow_feld_tot, outflows_feld)
 
 
-def outflows(redshift,sfr,m):
-    flow = outflows_nelson(redshift,sfr,m)
-#    flow = outflows_feldmann(redshift,sfr,m)
+def outflows(redshift,sfr,m,out_model):
+    if(out_model=='nelson'):
+        flow = outflows_nelson(redshift,sfr,m)
+    elif (out_model=='feldmann'):
+        flow = outflows_feldmann(redshift,sfr,m)
+    else:
+        flow = 0 
+
     return flow
 
 def mass_integral(choice, delta_lims, reduce_sn, t, metallicity, sfr_lookup, z_lookup, imf, SNyield, AGByield, totyields, nisotopes, isotopes):
