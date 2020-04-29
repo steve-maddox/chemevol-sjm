@@ -14,9 +14,13 @@ and described in detail in Rowlands et al 2014 (MNRAS, 441, 1040), and De Vis et
 The version of this code used for De Vis et al 2017b is in release [v_de_vis2017](https://github.com/zemogle/chemevol/releases/tag/v_de_vis2017).
 The master version contains the version described in De Vis et al 2020.
 
+#
+If you use this code, please do cite the above papers.  The license is provided with this package.
+
+
 ## SJM version
 
-The version modified by Maddox has many changes including some bug fixes and some simplifications of the code. 
+The version modified by S.Maddox has many changes including some bug fixes and some simplifications of the code. 
 
 
 * in evolve.py:
@@ -57,9 +61,6 @@ The version modified by Maddox has many changes including some bug fixes and som
    * changed the interpolation method for find_mass_loading and find_reaccretion_time
    * changed the table of reaccretion times. 
    
-
-#
-If you use this code, please do cite the above papers.  The license is provided with this package.
 
 ## Installation
 
