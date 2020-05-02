@@ -744,7 +744,8 @@ def recycle(t, dt, redshift, mstars, time, dts, recycle_gas, recycle_dust, recyc
     #  add all the velocity components
 #    dm = np.zeros(time.shape)
 #    factors = np.zeros(time.shape)
-    for iv,tff in enumerate(tffs) : 
+    if(gas_out>0):
+      for iv,tff in enumerate(tffs) : 
         if np.isfinite(tff) and t+tff<time[-1] :
             # spread out the recycling of this gas so they do not come in all at the same timestep but are rather smeared out over a range of steps 
             # (a discrete burst in outflow will not result in a discrete burst in recycling).
@@ -761,5 +762,9 @@ def recycle(t, dt, redshift, mstars, time, dts, recycle_gas, recycle_dust, recyc
                 recycle_dust+=dm*mdust_out/gas_out
                 
             recycle_Z+= np.outer(dm,metals_out/gas_out)
-
+    else: 
+        recycle_dust = 0 
+        recycle_Z = np.zeros(metals_out.shape) 
+        
+        
     return recycle_gas, recycle_dust, recycle_Z
