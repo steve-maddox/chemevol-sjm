@@ -10,7 +10,7 @@ and described in detail in De Vis et al 2017, 2020 (MNRAS, 471, 1743; ).
 
 If you use this code, please do cite the above papers.
 
-Copyright (C) 2019 Haley Gomez, Edward Gomez, Pieter De Vis and Simon Schofield, 
+Copyright (C) 2019 Haley Gomez, Edward Gomez, Pieter De Vis and Simon Schofield,
 Cardiff University and LCOGT. The code has been contributed by Kate Rowlands.
 
 This program is free software; you can redistribute it and/or modify
@@ -46,7 +46,7 @@ import os.path
 import json
 from astropy.cosmology import Planck13, z_at_value
 import astropy.units as u
-import bisect 
+import bisect
 
 # Set up a logging system so that we can store warnings without them completely filling up the terminal screen and drowning out other usefull output.
 logging.captureWarnings(True)
@@ -104,7 +104,7 @@ class ChemModel:
             self.imf = imf_kroup
         elif (self.imf_type in ["Salp", "salp", "s"]):
             self.imf = imf_salp
-        # set it up so that the reduction factor is 1 (i.e. no change) when the reduction is turned off.     
+        # set it up so that the reduction factor is 1 (i.e. no change) when the reduction is turned off.
         if not self.reduce_sn['on'] or self.reduce_sn['factor'] == 0:
             self.reduce_sn = 1
         else:
@@ -146,16 +146,16 @@ class ChemModel:
             vals = np.loadtxt(self.SFH_file)
             scale = [1e-9,1e9,1e9] # Gyr conversions for time, SFR (because we want to do dt integral over Gyrs)
             sfh = vals*scale # converts time in Gyr and SFR in Msun/Gyr
-            
+
             # extrapolates SFH back to 0.001Gyr using SFH file and power law (gamma)
             final_sfh, final_inflows = extra_sfh_and_inflows(sfh, self.gamma, self.tstart)
             self.sfh = np.array(final_sfh)
             self.inflowvals= np.array(final_inflows)
-            dts=np.diff(self.sfh[:,0]) 
+            dts=np.diff(self.sfh[:,0])
             dts=np.append(dts[0],dts)
             if self.inflows['mass']>0:
                 self.inflowvals[:,1] = self.inflowvals[:,1]/np.sum((self.inflowvals[:,1]*dts)[np.where(self.inflowvals[:,0]<self.tend)])*self.inflows['mass'] # if available, rescale inflow mass to provided value
-            else:    
+            else:
                 self.inflowvals[:,1] = self.inflowvals[:,1]/np.sum((self.inflowvals[:,1]*dts)[np.where(self.inflowvals[:,0]<self.tend)])*self.gasmass_init #if not provided, set inflow mass the same as initial gas mass
             return vals[1]
         except Exception as e:
@@ -169,7 +169,7 @@ class ChemModel:
         try:
             # look up nearest SFR/SFE value at any specified time
             vals = find_nearest(self.sfh,t)
-            return vals[1]   
+            return vals[1]
         except:
             print('No SFH yet for model %s'%(self.name))
 
@@ -179,11 +179,11 @@ class ChemModel:
         '''
         try:
             vals = find_nearest(self.inflowvals,t)
-            return vals[1] 
+            return vals[1]
 
         except:
-            print('No inflows yet for model %s'%(self.name))      
-                
+            print('No inflows yet for model %s'%(self.name))
+
 
     def gas_metal_dust_mass(self, sn_rate):
             '''
@@ -203,7 +203,7 @@ class ChemModel:
             md_cloud = 0
             md_IGM = 0
 
-            # initialise metals as arrays with the same size as self.isotopes 
+            # initialise metals as arrays with the same size as self.isotopes
             nisotopes=len(self.isotopes)
             metals = self.Z_init*mg*self.inflow_metalfractions
             metals_IGM = np.zeros(nisotopes)
@@ -212,28 +212,28 @@ class ChemModel:
                 nt = len(times)
                 it = np.maximum(1,np.minimum(nt-1,bisect.bisect(-times,-t)))
                 fnext = np.maximum(0.,np.minimum(1.,(t - times[it-1]) / (times[it] - times[it-1])))
-                fprev = 1.-fnext   
+                fprev = 1.-fnext
                 redshift =  redshifts[it]*fnext + redshifts[it-1]*fprev
-                return redshift 
+                return redshift
 
             redshift_lookup = np.logspace(-3,2.5,100)
             time_lookup = Planck13.age(redshift_lookup).value
 
 
-            prev_t = self.tstart 
+            prev_t = self.tstart
             z_lookup = np.zeros(1+nisotopes)
             sfr_list = []
             sfr_lookup = []
             all_results = []
-            
+
             time = self.sfh[:,0] # sfr is in units of Msun Gyr^-1
-            dts = np.diff(time) 
+            dts = np.diff(time)
             dts = np.append(dts[0],dts)
             now = datetime.now()
             remainingburststeps=0
 
             gas_inf=0
-            gas_rec=0 
+            gas_rec=0
             gas_out=0
             mg_IGM=0
 
@@ -249,13 +249,13 @@ class ChemModel:
                     redshift=z_at_time(t,time_lookup,redshift_lookup)
                 except:
                     redshift=0.
-                        
-                fg=mg/(mg+mstars)
+
+#                fg=mg/(mg+mstars)
                 metallicity = metals[0]/mg
                 metallicities = metals/mg
-                
+
                 # SET UP SFR
-            
+
                 # If the SFH_file ends in .sfe it is given as a star formation efficiency, and thus needs to be multiplied by gas mass.
                 # In that case, the SFE prescription described in De Vis et al (2020) Section 3.2 will be used.
                 if ".sfe" in self.SFH_file:
@@ -263,23 +263,26 @@ class ChemModel:
 
                     # If the add_burst parameter is True, add bursts so that there is a 50% chance that there is a burst in any 2 Gyr.
                     if self.add_bursts:
-                        if remainingburststeps==0:    # check is burst if currently ongoing, if not check if a new burst starts. 
+                        if remainingburststeps==0:    # check is burst if currently ongoing, if not check if a new burst starts.
                             Pburst=1.-0.5**(dt/2.)  # 50% chance in 2 Gyr
                             if rn.random()<Pburst:
                                 remainingburststeps=rn.randint(1, 10)
-                                facburst=10**(rn.uniform(np.log10(0.003),np.log10(0.1))) # during this burst, between 0.3 and 10% of the total stellar mass is formed during this burst.
+                                facburst=10**(rn.uniform(np.log10(0.003),np.log10(1.0))) # during this burst, between 0.03 and 100% of the total stellar mass is formed during this burst.
+#                            if ( (np.abs(t-5.)<dt) | (np.abs(t-12.)<dt) ) :
+#                                remainingburststeps=1
+#                                facburst=4.0
                                 SFRburst=mstars*facburst/dt/remainingburststeps
                         if remainingburststeps>0:
                             SFR=SFR+SFRburst
                             remainingburststeps+=-1
 
-                # predetermined SFH can also be tested using SFH files with any other extension.             
+                # predetermined SFH can also be tested using SFH files with any other extension.
                 else:
-                    SFR = self.sfr(t)      
+                    SFR = self.sfr(t)
 
                 # SN rate
                 r_sn = SFR*sn_rate [item]
-                
+
 
                 # SET UP INFLOWS AND OUTFLOWS
                 # How much gas is lost or gained dure to outflows/inflows
@@ -294,7 +297,7 @@ class ChemModel:
                     self.outflows['reduce'])
 
                 # Reduce outflows so that no more gas can be removed than is currently present
-                # We allow a maximum of 50% of the gas to blown out in a single 30 Myr timestep. 
+                # We allow a maximum of 50% of the gas to blown out in a single 30 Myr timestep.
                 if gas_out*dt>0.5*mg:
                     logger.warning('SFR has been reduced by factor %s at time= %s Gyr because more than 50%% of the gas was being blown out in a single 30 Myr timestep for model %s'%((gas_out*dt)/(0.5*mg),t,self.name))
                     SFR=SFR*0.5*mg/(gas_out*dt)
@@ -332,18 +335,18 @@ class ChemModel:
                 sfr_list.append([t,SFR])
                 sfr_lookup = np.array(sfr_list)
 
-               
-                # SET UP COMPONENTS OF THE INTEGRALS OF STARS, GAS, METALS AND DUST 
-                
+
+                # SET UP COMPONENTS OF THE INTEGRALS OF STARS, GAS, METALS AND DUST
+
                 # First, determine the gas, metals and dust comsumed in astration
 
                 gas_ast = SFR # gas lost due to astration
 #                metals_ast = [astration(metals[iso],mg,SFR) for iso in range(nisotopes)]
                 metals_ast = astration(metals,mg,SFR)
                 mdust_ast = astration(md_tot,mg,SFR)
-            
+
                 # Second, determine the grain growth and destruction rates according to the THEMIS model or prescriptions from De Vis et al (2017b).
-                           
+
                 if self.THEMIS:
                     mdust_des_SN, t_des = destroy_dust_SN_THEMIS(self.destroy['on'], self.destroy['mass'], mg, r_sn, \
                         md_tot, self.coldfraction, self.eff_snrate)
@@ -357,7 +360,7 @@ class ChemModel:
                         metallicity, md_tot, self.coldfraction, min(self.availablefraction*2.45,1.))
 
                     mdust_gg=mdust_gg_diff + mdust_gg_cloud
-                    
+
                 else:
                     mdust_gg, t_gg = graingrowth(self.choice_dust['gg'],self.graingrowth,mg, SFR, \
                         metallicity, md_tot, self.coldfraction, self.availablefraction)
@@ -382,7 +385,7 @@ class ChemModel:
                 if self.recycle['on']:
                     recycle_gas,recycle_dust,recycle_Z = \
                         recycle(t, dt, redshift, mstars, time, dts, recycle_gas, recycle_dust, recycle_Z, outflows, gas_out, mdust_out, np.asarray(metals_out), self.recycle['esc_prob_perGyr'], self.recycle['reaccr_time_factor'], nisotopes)
-                
+
                 # Read the current recycling rate of gas, dust and metals (using the current timestep given by [item])
                 gas_rec, mdust_rec, metals_rec = recycle_gas[item],recycle_dust[item],recycle_Z[item]
 
@@ -396,13 +399,13 @@ class ChemModel:
                 dmstars = SFR - gas_ej
                 mstars += dmstars*dt
 
-                #GAS                
+                #GAS
                 dmg = -gas_ast + gas_ej + gas_inf - gas_out + gas_rec/dt
                 mg += dmg*dt
-                
+
                 #METALS
-                dmetals = [-metals_ast[iso] + metals_stars[iso] + metals_inf[iso] - metals_out[iso] + metals_rec[iso]/dt for iso in range(nisotopes)] 
-                metals = [metals[iso]+dmetals[iso]*dt for iso in range(nisotopes)]  # metal mass integral
+                dmetals = -metals_ast + metals_stars + metals_inf - metals_out + metals_rec/dt
+                metals = metals+dmetals*dt
 
                 #DUST
                 if self.THEMIS:
@@ -410,10 +413,13 @@ class ChemModel:
                         logger.warning('Rescaling fragmentation rate at time= %s Gyr to avoid destroying more dust than is present in the diffuse ISM for model %s'%(t,self.name))
                         mdust_des_frag=md_diff/dt
                     ddust_diff = mdust_inf - mdust_out*(1-f_c) + mdust_rec/dt + mdust_gg_diff - mdust_des_SN - mdust_des_frag
-                    ddust_cloud = -mdust_ast + mdust_stars - mdust_out*f_c + mdust_gg_cloud 
+                    ddust_cloud = -mdust_ast + mdust_stars - mdust_out*f_c + mdust_gg_cloud
 
-                    md_diff += ddust_diff*dt 
-                    md_cloud += ddust_cloud*dt 
+                    md_diff += ddust_diff*dt
+                    md_cloud += ddust_cloud*dt
+                    # add tests to stop mdust going -ve due to too much outflow, SN and frag
+                    if(md_diff<0.0) : md_diff = 0.0
+                    if(md_cloud<0.0) : md_cloud = 0.0
 
                     #reduce diffuse dust content if the dust-to-metal ratio is unrealistically high
                     if md_diff/((1-f_c)*metals[0])>self.availablefraction:
@@ -424,9 +430,9 @@ class ChemModel:
                             correction_dust_depletion=self.availablefraction*metals[0]*f_c*2.45/md_cloud
                             md_cloud=self.availablefraction*metals[0]*f_c*2.45
                     else:
-                            correction_dust_depletion=1.        
-                   
-                    md_tot= md_diff+md_cloud  
+                            correction_dust_depletion=1.
+
+                    md_tot= md_diff+md_cloud
 
                 else:
                     ddust = -mdust_ast + mdust_stars + mdust_inf - mdust_out + mdust_rec/dt + mdust_gg - mdust_des
@@ -439,20 +445,34 @@ class ChemModel:
                 md_gg += mdust_gg*dt # dust source from grain growth only
                 md_stars += mdust_stars*dt # dust source from stars only
 
+                #Clouds are dissociated
+                md_tot+=-0.9*mdust_gg_cloud*dt*correction_dust_depletion  #90% of the newly accreted dust in clouds evaporates as the clouds are dissociated (ices etc evaporate in the harsher environment)
+
+                #Reset cloud and diffuse dust mass as new clouds are formed with the same dust-to-gas ratio as the surrounding diffuse ISM
+                md_cloud=md_tot*f_c
+                md_diff=md_tot*(1-f_c)
+
+#                if ( (np.abs(t-5.-3*dt)<dt*5) | (np.abs(t-12.-3*dt)<dt*5) ) :
+#                    print('{:8.3e} {:8.1e} {:8.1e} {:8.1e} {:8.1e} {:8.1e} {:8.1e} {:8.1e} {:8.1e} {:8.1e}, {:8.1e} {:8.1e} {:8.1e}, {:8.1e} {:8.1e} {:8.1e}, {:8.1e} {:8.1e}'.format(\
+#                          t,mdust_inf,-mdust_out,mdust_rec/dt,-mdust_ast,mdust_stars,mdust_gg_cloud,mdust_gg_diff,-mdust_des_SN,-mdust_des_frag, \
+#                          ddust_diff*dt, md_diff, mz_diff, ddust_cloud*dt, md_cloud, mz_cloud, (ddust_diff+ddust_cloud)*dt, md_tot))
+
                 # Sanity checks
                 if mg/(mstars+mg)<0.0001:
                     # exit program if gas fraction goes below 1%
                     print('Oops you have no interstellar medium left for model %s'%(self.name))
-                    exit()
-                
+#                    exit()
+
                 if metals[0] < 0:
                     # exit program if all ISM removed
                     print('Oops you have no metals left for model %s'%(self.name))
-                    exit()
+#                    exit()
+                    metals[0]=0
 
                 if md_tot<0:
                     print('Oops you have no dust left for model %s, model is terminated'%(self.name))
-                    exit()
+#                    exit()
+                    md_tot = 0
 
                 #INFLOWS AND OUTFLOWS in given timestep to store in output
                 mg_outflows = gas_out*dt
@@ -462,28 +482,30 @@ class ChemModel:
                 #track mas of gas, metals and dust in the InterGalactic Medium
                 mg_IGM += mg_outflows - mg_recycled
                 md_IGM += mdust_out*dt - mdust_rec
-                metals_IGM = [metals_IGM[iso] + metals_out[iso]*dt - metals_rec[iso] for iso in range(nisotopes)]
+#                metals_IGM = [metals_IGM[iso] + metals_out[iso]*dt - metals_rec[iso] for iso in range(nisotopes)]
+                metals_IGM += metals_out*dt - metals_rec
 
-                # determine dust/metals ratio 
+                # determine dust/metals ratio
                 if mg <= 0. or metals[0] <=0:  #This can only be true if something went wrong
                     dust_to_metals = 0.
                 else:
                     dust_to_metals = md_tot/metals[0]
-                
+
                 #STORE RESULTS
                 all_results.append(np.hstack(([t, redshift, mg, mstars, metallicity, \
                                     md_tot, dust_to_metals, SFR*1e-9, \
                                     md_all, md_stars, md_gg, t_des, t_frag, t_gg_diff, t_gg_cloud, \
-                                    mg_outflows, mg_recycled, mg_inf, mg_IGM, md_IGM, md_diff, md_cloud], 
+                                    mg_outflows, mg_recycled, mg_inf, mg_IGM, md_IGM, md_diff, md_cloud],
                                     metals, metals_IGM)))
 
-                #Clouds are dissociated
-                md_tot+=-0.9*mdust_gg_cloud*dt*correction_dust_depletion  #90% of the newly accreted dust in clouds evaporates as the clouds are dissociated (ices etc evaporate in the harsher environment)
-  
-                #Reset cloud and diffuse dust mass as new clouds are formed with the same dust-to-gas ratio as the surrounding diffuse ISM
-                md_cloud=md_tot*f_c
-                md_diff=md_tot*(1-f_c)
                 prev_t=t
+
+#                if ( (np.abs(t-5.-3*dt)<dt*5) | (np.abs(t-12.-3*dt)<dt*5) ) :
+                if ( md_tot <0 ):
+                    print('{:8.3e} {:8.1e} {:8.1e} {:8.1e} {:8.1e} {:8.1e} {:8.1e} {:8.1e} {:8.1e} {:8.1e}, {:8.1e} {:8.1e} {:8.1e}, {:8.1e} {:8.1e} {:8.1e}, {:8.1e} {:8.1e}\n'.format(\
+                          correction_dust_depletion,mdust_inf,-mdust_out,mdust_rec/dt,-mdust_ast,mdust_stars,mdust_gg_cloud,mdust_gg_diff,-mdust_des_frag,-mdust_des_SN, \
+                          ddust_diff*dt, md_diff, mz_diff, ddust_cloud*dt, md_cloud, mz_cloud, (ddust_diff+ddust_cloud)*dt, md_tot))
+
 
             print("Gas, metal and dust mass exterior loop done after %s for model %s" % (str(datetime.now()-now),self.name))
             return np.array(all_results)
@@ -522,11 +544,11 @@ class ChemModel:
 
 
 '''
-Class for running multiple models. 
+Class for running multiple models.
 Parallel processing option is provided in separate file.
 '''
 
-class BulkEvolve: 
+class BulkEvolve:
     def __init__(self, filename):
         if os.path.isfile(filename):
             self.filename = filename
@@ -579,14 +601,14 @@ class BulkEvolve:
                                     'reduce': gal_data['outflows_reduce']}
             gal_data['recycle'] = { 'on': gal_data['recycle_on'],
                                     'esc_prob_perGyr': gal_data['esc_prob_perGyr'],
-                                    'reaccr_time_factor': gal_data['reaccr_time_factor']}                        
+                                    'reaccr_time_factor': gal_data['reaccr_time_factor']}
             gal_data['destroy'] = { 'on': gal_data['destroy_on'],
                                     'mass': gal_data['mass_destroy']}
             gal_data['fragmentgrains'] = {'on': gal_data['fragment_on'],
-                                          'tau': gal_data['fragment_tau']}                                                            
+                                          'tau': gal_data['fragment_tau']}
             gal_data['isotopes'] = gal_data['isotopes'].split(";")
-            gal_data['Pristine_isotope_fractions' ] = [float(stri) for stri in gal_data['Pristine_isotope_fractions'].split(";")]                           
-            
+            gal_data['Pristine_isotope_fractions' ] = [float(stri) for stri in gal_data['Pristine_isotope_fractions'].split(";")]
+
             init_list.append(gal_data)
         self.inits = init_list
         return
@@ -611,7 +633,7 @@ class BulkEvolve:
 
             snrate = ch.supernova_rate()
             all_results = ch.gas_metal_dust_mass(snrate)
-            
+
             # write all the results to a dictionary
             params = {'time' : all_results[:,0],
            'mgas' : all_results[:,1],
@@ -638,7 +660,7 @@ class BulkEvolve:
             #compute additional parameters
             params['fg'] = params['mgas']/(params['mgas']+params['mstars'])
             params['ssfr'] = params['sfr']/params['mstars']
-            
+
             paramsorder=['time','z','fg','mgas','mstars','mdust','mdust_diffuse',\
                         'mdust_cloud','metallicity','dust_metals_ratio','sfr',\
                         'ssfr','dust_all','dust_stars','dust_ism','time_destroy',\
@@ -655,9 +677,9 @@ class BulkEvolve:
 
             # write out to file based on 'name' identifier
             name = item['name']
-            
+
             ascii.write(params,str(name+'.csv'),format='csv',names=paramsorder)
-            
+
             # if you want an array including every inits entry:
             galaxies.append(params)
         self.results = galaxies

@@ -39,7 +39,7 @@ def extra_sfh_and_inflows(sfh, gamma, tstart):
     entry in the list.
     In:
     -- sfh: combined array time, SFH/SFE and inflows
-    -- gamma: parameter that lowers the SHF/SFE and inflows according to power law 
+    -- gamma: parameter that lowers the SHF/SFE and inflows according to power law
 
     Returns a new SFH/SFE and inflows list made from joining the
     extrapolated SFH/SFE in this routine to the original input file
@@ -48,7 +48,7 @@ def extra_sfh_and_inflows(sfh, gamma, tstart):
     t_0 = tstart # we want it to start at 1e-3
     sfh = sfh[np.where(sfh[:,0]>tstart)]
     tend_sfh=sfh[1][0] # 1st time array after 0
-     
+
     # work out difference between t_0 and [1] entry in SFH
     dlogt = (np.log10(tend_sfh) - np.log10(t_0))/150.  # use larger number instead of 150 if the SFH at the start is not smooth
     norm = sfh[1][1]*(1./np.exp(-1.*gamma*(tend_sfh-tstart)))
@@ -64,11 +64,11 @@ def extra_sfh_and_inflows(sfh, gamma, tstart):
         newinflows.append([t_new,inflow_new])
         t_new = 10.**(np.log10(t_new)+dlogt)
 
-    t_last = 14. # more than age of planck universe 
+    t_last = 14. # more than age of planck universe
     i_last = np.max(np.where(sfh[:,0]<t_last))
     for i in range(1,i_last):
         newSFH.append([sfh[i+1][0],sfh[i+1][1]])
-        newinflows.append([sfh[i+1][0],sfh[i+1][2]])   
+        newinflows.append([sfh[i+1][0],sfh[i+1][2]])
     return newSFH[1::],newinflows[1::]
 
 def astration(parameter,gasmass,sfr):
@@ -122,7 +122,7 @@ def imf_topchab(m):
 
 def imf_kroup(m):
     '''
-    Kroupa & Weidner (2003, ApJ 598 1076) IMF 
+    Kroupa & Weidner (2003, ApJ 598 1076) IMF
     '''
     if m <= 0.5:
         imf = 0.58*(m**-0.30)/m
@@ -211,7 +211,7 @@ def ejected_metal_masses(t,m, sfrdiff, zdiffs, metallicity, imf, SNyield, AGByie
      -- isotopes: identifyers for the different isotopes/metal budgets (typically Z, O, N for total metal budget, oxygen and nitrogen)
      -- totyields: boolean whether total metal yield tables are used (True) or fresh metal yields are used (False)
 
-    
+
     When using total metal yield tables:
     dej(m,t) = mp(m,Z) x SFR(t-tau(m)) x phi(m)
     When using fresh metal yield tables:
@@ -227,13 +227,13 @@ def ejected_metal_masses(t,m, sfrdiff, zdiffs, metallicity, imf, SNyield, AGByie
             qZs=find_tot_yield(m,metallicity, SNyield, AGByield, nisotopes, isotopes)   # use total yields
             dej = m*qZs * sfrdiff * imf(m)
 
-        else:    
+        else:
             qZs=find_yield(m,metallicity, SNyield, AGByield, nisotopes, isotopes) # use fresh yields
             dej = ((m - remnant_mass(m))*zdiffs + m*qZs) * sfrdiff * imf(m)  # add fresh yields to pre-existing metals
         for i in range(len(dej)):
             if dej[i]<0:
                 dej[i]=0
- 
+
     return dej
 
 def ejected_dust_mass(choice, delta_lims, reduce_sn, m, mz_ej):
@@ -260,7 +260,7 @@ def ejected_dust_mass(choice, delta_lims, reduce_sn, m, mz_ej):
     # If LIMS is turned on or off
     if m <= 8.:
         if choice['lims']:
-            dej= delta_lims*  mz_ej     
+            dej= delta_lims*  mz_ej
 
         else:
             dej= 0.
@@ -268,9 +268,9 @@ def ejected_dust_mass(choice, delta_lims, reduce_sn, m, mz_ej):
     elif m > 40.: # no dust from stars with m>40Msun.
         dej = 0.0
 
-    else: 
+    else:
         if choice['sn']:
-            dej = reduce_sn**-1*find_nearest(np.array(dust_mass_sn_eff),m)[1]*  mz_ej  
+            dej = reduce_sn**-1*find_nearest(np.array(dust_mass_sn_eff),m)[1]*  mz_ej
             #dej = reduce_sn**-1*find_nearest(np.array(dust_mass_sn),m)[1] # alternative to work with total dust yields rather than relative to the metal yields.
         else:
             dej =0.0
@@ -297,7 +297,7 @@ def grow_timescale(on,e,g,sfr,z,d,f_available):
     else:
         t_grow = g/(e*z*sfr)
         t_grow = t_grow/(1.-((d/g)/z)/f_available) #to account for metals already locked up in grains and metals that can never be accreted onto dust grains
- 
+
     return t_grow #units of Gyrs
 
 
@@ -320,13 +320,13 @@ def graingrowth(on,e,g,sfr,z,md,f_c,f_available):
     e between 500-1000 appropriate for timescales < 1 Gyr.
     '''
 
-    if (on == False or md == 0 or z == 0 or e == 0): #accounts for 1/z in equation
+    if (on == False or md <= 0 or z == 0 or e == 0): #accounts for 1/z in equation
         mdust_gg = 0.
         time_gg = 0.
     else:
         time_gg = grow_timescale(on,e,g,sfr,z,md,f_available) # units of Gyrs as SFR = Msun/Gyr; the factor (1.-((md/g)/z)) present in Mattsson & Andersen 2012 is a typo and should not be included here (it should only be in t_grow calculation above)
         if time_gg>0.:
-            mdust_gg = md * f_c * time_gg**-1 # units of mdust per Gyr; 
+            mdust_gg = md * f_c * time_gg**-1 # units of mdust per Gyr;
         else:
             mdust_gg=0.
 
@@ -334,7 +334,7 @@ def graingrowth(on,e,g,sfr,z,md,f_c,f_available):
 
 def graingrowth_THEMIS_cloud(on,kgg,g,sfr,z,md,f_c,f_available):
     '''
-    Calculates the grain growth contribution to dust mass in clouds within the THEMIS (Jones et al., 2013, 2017, 2020/in prep.) dust modelling framework, 
+    Calculates the grain growth contribution to dust mass in clouds within the THEMIS (Jones et al., 2013, 2017, 2020/in prep.) dust modelling framework,
     also returns grain growth timescale.
 
     In:
@@ -348,19 +348,20 @@ def graingrowth_THEMIS_cloud(on,kgg,g,sfr,z,md,f_c,f_available):
     - f_available: fraction of metals that are available for dust grain growth
     '''
 
-    if (on == False or md == 0 or z == 0 or kgg == 0): #accounts for 1/z in equation
+    if (on == False or md <= 0 or z == 0 or kgg == 0): #accounts for 1/z in equation
         mdust_gg = 0.
         time_gg = 0.
     else:
         mdmz=md/g/z
-        mdust_gg =f_c * kgg * md /g * z/0.0134  * sfr *(1-mdmz/f_available)# units of mdust per Gyr; 0.0134 is the MW metallicity; 0.5 is the fraction of the dense cloud-formed a-C:H mantle material that is processed into refractory a-C dust (e.g., Jones & Ysard (2019, submitted)
+        depletion_factor = np.maximum(0.0,(1-mdmz/f_available))
+        mdust_gg = md * f_c * kgg * z/0.0134  * sfr/g *depletion_factor# units of mdust per Gyr; 0.0134 is the MW metallicity; 0.5 is the fraction of the dense cloud-formed a-C:H mantle material that is processed into refractory a-C dust (e.g., Jones & Ysard (2019, submitted)
         time_gg = md * f_c * mdust_gg**-1
 
     return mdust_gg, time_gg # units of Msolar, Gyrs
 
 def graingrowth_THEMIS_diffuse(on,kgg,g,sfr,z,md,f_c,f_available):
     '''
-    Calculates the grain growth contribution to dust mass in the diffuse ISM within the THEMIS (Jones et al., 2013, 2017, 2020/in prep.) dust modelling framework, 
+    Calculates the grain growth contribution to dust mass in the diffuse ISM within the THEMIS (Jones et al., 2013, 2017, 2020/in prep.) dust modelling framework,
     also returns grain growth timescale.
 
     In:
@@ -374,15 +375,18 @@ def graingrowth_THEMIS_diffuse(on,kgg,g,sfr,z,md,f_c,f_available):
     - f_available: fraction of metals that are available for dust grain growth
     '''
 
-    if (on == False or md == 0 or z == 0 or kgg == 0): #accounts for 1/z in equation
+    if (on == False or md <= 0 or z == 0 or kgg == 0): #accounts for 1/z in equation
         mdust_gg = 0.
         time_gg = 0.
+
     else:
         mdmz=md/g/z
-        mdust_gg =(1-f_c) * kgg * 5. * md /g * z/0.0134 * (1-mdmz/f_available) *g # units of mdust per Gyr; 0.0134 is the MW metallicity; 0.5 is the fraction of the dense cloud-formed a-C:H mantle material that is processed into refractory a-C dust (e.g., Jones & Ysard (2019, submitted)
-        time_gg = md * f_c * mdust_gg**-1
+        depletion_factor = np.maximum(0,(1-mdmz/f_available))
+        mdust_gg = md * (1-f_c) * kgg * 5. * z/0.0134 *  depletion_factor # units of mdust per Gyr; 0.0134 is the MW metallicity; 0.5 is the fraction of the dense cloud-formed a-C:H mantle material that is processed into refractory a-C dust (e.g., Jones & Ysard (2019, submitted)
+#        time_gg = md * f_c * mdust_gg**-1 # the f_c must be a bug - it must be (1-f_c)
+        time_gg = md * (1-f_c) * mdust_gg**-1
 
-    return mdust_gg, time_gg # units of Msolar, Gyrs    
+    return mdust_gg, time_gg # units of Msolar, Gyrs
 
 
 def destruction_timescale(on,destruct,g,supernova_rate):
@@ -402,7 +406,7 @@ def destruction_timescale(on,destruct,g,supernova_rate):
     else:
         # sn_rate is in units of N per Gyr
         t_destroy = g/(destruct*supernova_rate)  # units are in Gyrs
- 
+
     return t_destroy # units are in Gyrs
 
 def destroy_dust(on,destruct,gasmass,supernova_rate,md,f_c,sn_eff):
@@ -420,19 +424,19 @@ def destroy_dust(on,destruct,gasmass,supernova_rate,md,f_c,sn_eff):
     -- sn_eff: correction factor to obtain the effective SN rate for dust destruction (to account for previous SN clearing out dust in the vicinity)
     '''
 
-    if (on == False or md == 0 or supernova_rate == 0 or destruct == 0):
+    if (on == False or md <= 0 or supernova_rate == 0 or destruct == 0):
         mdust_des = 0
         t_des = 0
     else:
-        t_des = destruction_timescale(on,destruct,gasmass,sn_eff*supernova_rate) 
+        t_des = destruction_timescale(on,destruct,gasmass,sn_eff*supernova_rate)
         mdust_des = md*(1-f_c)*t_des**-1
-  
+
     return mdust_des, t_des # in Msolar, Gyrs
 
 def destroy_dust_SN_THEMIS(on,tau_d,gasmass,supernova_rate,md,f_c,sn_eff):
     '''
-    Determine how much dust mass is removed by destruction in SN shocks by THEMIS. The prescription is essentially the same as for destroy_dust(), 
-    except that it is expressed in terms of the amount of dust that would be destroyed per SN in MW conditions. 
+    Determine how much dust mass is removed by destruction in SN shocks by THEMIS. The prescription is essentially the same as for destroy_dust(),
+    except that it is expressed in terms of the amount of dust that would be destroyed per SN in MW conditions.
     Essentially this means that the destruct parameter is just reduced by a factor of 135 to find tau_d.
     However this allows for calculations consistent with Bocchio et al (2014), which result in destruct tau_d=10 for silicate dust and tau_d=30 for carbonaceous dust.
     The above numbers have alred folded in the correction factor to obtain the effective SN rate for dust destruction (to account for previous SN clearing out dust in the vicinity)
@@ -445,19 +449,19 @@ def destroy_dust_SN_THEMIS(on,tau_d,gasmass,supernova_rate,md,f_c,sn_eff):
     -- f_c: fraction of gas in cold dense clouds
     '''
 
-    if (on == False or md == 0 or supernova_rate == 0 or tau_d == 0):
+    if (on == False or md <= 0 or supernova_rate == 0 or tau_d == 0):
         mdust_des = 0
         t_des = 0
     else:
         t_des = gasmass/(135*tau_d*supernova_rate*sn_eff/0.36)    #135 is a normalisation factor to scale to MW conditions (the THEMIS MW gas-to-dust ratio is 135)
         mdust_des = md*(1-f_c)*t_des**-1
 
-    return mdust_des, t_des # in Msolar, Gyrs   
+    return mdust_des, t_des # in Msolar, Gyrs
 
 def destroy_dust_frag_THEMIS(on,tau,gasmass,ssfr,md,f_c):
     '''
-    Determine how much dust mass is removed in the diffuse ISM by THEMIS (photo-)fragmentation of 
-    large a-C:H/a-C grains and the a-C mantles on the amorphous silicate grains (a-Sil/a-C). 
+    Determine how much dust mass is removed in the diffuse ISM by THEMIS (photo-)fragmentation of
+    large a-C:H/a-C grains and the a-C mantles on the amorphous silicate grains (a-Sil/a-C).
     See De Vis et al (2020) or Jones et al (2020/in prep.).
 
     In:
@@ -469,14 +473,14 @@ def destroy_dust_frag_THEMIS(on,tau,gasmass,ssfr,md,f_c):
     -- f_c: fraction of gas in cold dense clouds
     '''
 
-    if (on == False or md == 0 or tau == 0):
+    if (on == False or md <= 0 or tau == 0):
         mdust_des = 0
         t_des = 0
     else:
         mdust_des = (1-f_c) * (1-0.1) * tau * md * ssfr/0.027  # (1-0.1) factor is to account for fragmentation not working on silicate grains
         t_des = md * (1-f_c) * (1-0.1) * mdust_des**-1
 
-    return mdust_des, t_des # in Msolar, Gyrs        
+    return mdust_des, t_des # in Msolar, Gyrs
 
 def inflows_SFR(sfr,parameter):
     '''
@@ -498,7 +502,7 @@ def gas_inandout(redshift,in_on,out_on,out_model,in_sfr,sfr,m,reduceout):
     In:
     -- in_on: are inflows turned on? (True/False)
     -- out_on: are outflows turned on? (True/False)
-    -- out_model: outflow model nelson or feldmann 
+    -- out_model: outflow model nelson or feldmann
     -- in_sfr: inflow rate at time t
     -- sfr: SFR at time t
     -- m: stellar mass at time t
@@ -515,7 +519,7 @@ def gas_inandout(redshift,in_on,out_on,out_model,in_sfr,sfr,m,reduceout):
     else:
         gas_outflows= np.array(outflows(redshift,sfr, m,out_model))/reduceout
         gas_out = gas_outflows[0]
- 
+
     return gas_inf,gas_out,gas_outflows[1:4]
 
 def metals_inandout(in_met,out_met,metallicities,inflow_metalfractions,gas_in,gas_out,nisotopes):
@@ -531,13 +535,13 @@ def metals_inandout(in_met,out_met,metallicities,inflow_metalfractions,gas_in,ga
     -- gas_out: gas outflow rate
     -- nisotopes: number of isotopes under study
     '''
-    
+
     metals_inf = inflow_metalfractions*in_met*gas_in
     if out_met == False:
         metals_out = np.zeros(nisotopes)
     else:
-        metals_out= metallicities*gas_out 
-        
+        metals_out= metallicities*gas_out
+
     return metals_inf,metals_out
 
 def dust_inandout(in_md,out_md,D,gas_in,gas_out):
@@ -559,31 +563,31 @@ def dust_inandout(in_md,out_md,D,gas_in,gas_out):
         dust_out = D*gas_out
 
     return dust_inf,dust_out
-    
+
 def outflows_nelson(redshift,sfr,m):
     '''
     Define outflow rate, parameterised by the mass loading factors epsilon_out, outflows = epsilon_out x SFR.
     The mass loading factors are taken from Nelson et al 2019 (https://arxiv.org/pdf/1902.05554) for 5 different redshift.
-    For each mass and redshift, the mass loading factors for three different outflow velocity bins are given (v>0 km/s,v>150 km/s,v>300 km/s). 
+    For each mass and redshift, the mass loading factors for three different outflow velocity bins are given (v>0 km/s,v>150 km/s,v>300 km/s).
 
     In:
     -- redshift: redshift at time t
     -- sfr: SFR at time t
     -- m: stellar mass at time t
     '''
-    
+
     etas = find_mass_loading(m,redshift)
     outflows = sfr*10**etas
-    # make them differential 
-    outflows[0] = outflows[0]-outflows[1] 
+    # make them differential
+    outflows[0] = outflows[0]-outflows[1]
     outflows[1] = outflows[1]-outflows[2]
-    outflows_tot = np.sum(outflows) 
+    outflows_tot = np.sum(outflows)
 
     return np.append(outflows_tot,outflows)
 
 def outflows_feldmann(redshift,sfr,m):
     '''
-    Updated to have 3 velocity components shared in prop to [0.7,0.2,0.1] 
+    Updated to have 3 velocity components shared in prop to [0.7,0.2,0.1]
     Define outflow rate, parameterised by epsilon_out = 2*f_comb, outflows = epsilon_out x SFR.
     See Feldmann et al 2015 MNRAS 449 327 Eq 27 derived from Hopkins et al 2012 MNRAS 421 3522 (Fig 7).
     Here we use same terminology as their paper.
@@ -593,10 +597,10 @@ def outflows_feldmann(redshift,sfr,m):
     -- m: stellar mass at time t
     '''
     x = 1
-    # the function is based on simulations in Hopkins et al 2012 and only go to logM* = 8.1 
-    # so apply a max epsilon of 30, which correspnds to epsilon(1e8) 
+    # the function is based on simulations in Hopkins et al 2012 and only go to logM* = 8.1
+    # so apply a max epsilon of 30, which correspnds to epsilon(1e8)
     # equation from Feldmann et al 2015 based on Hopkins et al 2012 simulations
-    if(m<1e8): 
+    if(m<1e8):
         epsilon_out = 30
     else:
         y = (m/1e10)**-0.59
@@ -611,9 +615,9 @@ def outflows_feldmann(redshift,sfr,m):
         # Feldmann sets outflows to never be less than 2 x SFR, but Hopkins paper has floor at ~1
         elif (epsilon_out < 1):
             epsilon_out = 1
-    
+
     outflow_feld_tot = sfr * epsilon_out
-        
+
     outflows_feld = np.array([0.7, 0.2, 0.1])*outflow_feld_tot
     return np.append(outflow_feld_tot, outflows_feld)
 
@@ -624,7 +628,7 @@ def outflows(redshift,sfr,m,out_model):
     elif (out_model=='feldmann'):
         flow = outflows_feldmann(redshift,sfr,m)
     else:
-        flow = 0 
+        flow = 0
 
     return flow
 
@@ -680,7 +684,7 @@ def mass_integral(choice, delta_lims, reduce_sn, t, metallicity, sfr_lookup, z_l
      count = -1
 
      logm_edges = np.log10(m_min) + np.arange(steps)*dlogm
-     mmid_steps = 10.0**(logm_edges - dlogm/2)  
+     mmid_steps = 10.0**(logm_edges - dlogm/2)
      dm_steps = np.diff(mmid_steps)
      dm_steps = np.append(dm_steps[0],dm_steps)
      # loop over the full mass range
@@ -702,11 +706,11 @@ def mass_integral(choice, delta_lims, reduce_sn, t, metallicity, sfr_lookup, z_l
              # get nearest Z (and O, N, ...) and SFR which corresponds to Z and SFR at time=t-taum
              zdiffs = z_lookup[(abs(z_lookup[:,0]-tdiff)).argmin()][1:(nisotopes+1)] #for iso in range(nisotopes)] # find_nearest(z_lookup,tdiff)[1]
              sfrdiff = sfr_lookup[(abs(sfr_lookup[:,0]-tdiff)).argmin()][1] # find_nearest(sfr_lookup,tdiff)[1]
-             dezm = ejected_metal_masses(t,mmid, sfrdiff, zdiffs, metallicity, imf,  SNyield, AGByield, nisotopes, isotopes, totyields)     
-             ezm= ezm+ dezm*dm 
+             dezm = ejected_metal_masses(t,mmid, sfrdiff, zdiffs, metallicity, imf,  SNyield, AGByield, nisotopes, isotopes, totyields)
+             ezm= ezm+ dezm*dm
              em += ejected_gas_mass(mmid, sfrdiff, imf) * dm
              edm += ejected_dust_mass(choice, delta_lims, reduce_sn, mmid, dezm[0]) * dm
-  
+
      return em, ezm, edm
 
 
@@ -715,7 +719,7 @@ def recycle(t, dt, redshift, mstars, time, dts, recycle_gas, recycle_dust, recyc
     This function determines when the current outflows (gas, metals and dust) will be recycled and adds the appropriate inflows to the recycled inflows array at that time.
     The arrays recycle_gas, recycle_dust, recycle_Z contain these recycled inflows and are thus modified by this function.
     These arrays contain the total amount of gas to be recycled rather than the rates (i.e. integrated by dt), so that there is conservation of mass even when timesteps are not constant.
-    Each of the outflow components (with different outflow velocities) will be recycled at a different time based on their median outflow velocity. 
+    Each of the outflow components (with different outflow velocities) will be recycled at a different time based on their median outflow velocity.
 
     In:
     -- t: time in Gyrs
@@ -733,38 +737,38 @@ def recycle(t, dt, redshift, mstars, time, dts, recycle_gas, recycle_dust, recyc
     -- escape_probability_perGyr: probability that a given mass of outflowing material escapes the gravitational well per Gyr spend in the IGM
     -- recycle_time_factor: scaling factor f_{rec} to scale the precomputed recycling times up or down.
     -- nisotopes: number of different isotopes/metal budgets that are being tracked (typically 3 for Z, O, N)
-  
+
     '''
 
     # lookup precomputed recycling times for each velocity component and modify by factor
-    tffs=recycle_time_factor*np.asarray(find_reaccretion_time(mstars, redshift)) 
+    tffs=recycle_time_factor*np.asarray(find_reaccretion_time(mstars, redshift))
     # how much of the outflows escape the gravitational well
-    recycle_fractions=np.exp(-tffs*escape_probability_perGyr) 
+    recycle_fractions=np.exp(-tffs*escape_probability_perGyr)
 
     #  add all the velocity components
 #    dm = np.zeros(time.shape)
 #    factors = np.zeros(time.shape)
     if(gas_out>0):
-      for iv,tff in enumerate(tffs) : 
+      for iv,tff in enumerate(tffs) :
         if np.isfinite(tff) and t+tff<time[-1] :
-            # spread out the recycling of this gas so they do not come in all at the same timestep but are rather smeared out over a range of steps 
+            # spread out the recycling of this gas so they do not come in all at the same timestep but are rather smeared out over a range of steps
             # (a discrete burst in outflow will not result in a discrete burst in recycling).
-            sigma = np.maximum(tff/2,dt/2) 
+            sigma = np.maximum(tff/2,dt/2)
             factors = np.exp(-(time-(t+tff))**2/sigma**2/2.)
             factors[time<t] = 0 # truncate so that nothing is added before the outflow time
             factors=factors*dt/np.sum(factors*dt) # normalise these factors so that mass is conserved
-            # add the appropriate amount of material to the appropriate timesteps 
+            # add the appropriate amount of material to the appropriate timesteps
             dm = factors*outflows[iv]*dt*recycle_fractions[iv]
             recycle_gas+=dm
 
             # dust in fast outflow components is destroyed by shocks, so only add dust for v=0
-            if(iv==0) : 
+            if(iv==0) :
                 recycle_dust+=dm*mdust_out/gas_out
-                
+
             recycle_Z+= np.outer(dm,metals_out/gas_out)
-    else: 
-        recycle_dust = 0 
-        recycle_Z = np.zeros(metals_out.shape) 
-        
-        
+    else:
+        recycle_dust = 0
+        recycle_Z = np.zeros(metals_out.shape)
+
+
     return recycle_gas, recycle_dust, recycle_Z
