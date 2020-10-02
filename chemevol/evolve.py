@@ -185,11 +185,11 @@ class ChemModel:
             print('No inflows yet for model %s'%(self.name))
 
 
-    def gas_metal_dust_mass(self, sn_rate):
+    def gas_metal_dust_mass(self):
             '''
             Calculates the gas, metal and dust mass from the different sources and sinks in the model.
             '''
-
+            sn_rate = self.supernova_rate()
             # initialize
             mg = self.gasmass_init
             mstars = self.starmass_init
@@ -631,8 +631,9 @@ class BulkEvolve:
             print('Starting run on {}'.format(item['name']))
             ch = ChemModel(**item)
 
-            snrate = ch.supernova_rate()
-            all_results = ch.gas_metal_dust_mass(snrate)
+#            snrate = ch.supernova_rate()
+#            all_results = ch.gas_metal_dust_mass(snrate)
+            all_results = ch.gas_metal_dust_mass()
 
             # write all the results to a dictionary
             params = {'time' : all_results[:,0],
